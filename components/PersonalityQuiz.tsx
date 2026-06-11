@@ -6,7 +6,6 @@ import type { AnswerId } from "@/data/questions";
 import { questions } from "@/data/questions";
 import {
   calculateScores,
-  colorLabels,
   rankScores,
   summarizeScores,
   type AnswerMap,
@@ -28,31 +27,28 @@ type CSSVariableStyle = CSSProperties & Record<`--${string}`, string>;
 const resultDetails: Record<
   ColorKey,
   {
-    traits: string;
-    description: string;
     accent: string;
   }
 > = {
   red: {
-    traits: "热情 / 表达 / 行动力",
-    description: "你更容易被新鲜感、连接感和即时反馈点燃，擅长把气氛带起来。",
     accent: "#e84b42",
   },
   blue: {
-    traits: "细腻 / 秩序 / 深度",
-    description: "你倾向于先理解本质，再做出选择，重视准确、承诺和长期稳定。",
     accent: "#2f68c9",
   },
   yellow: {
-    traits: "目标 / 推进 / 掌控",
-    description: "你看重结果和效率，遇到挑战时通常会自然地走到前面。",
     accent: "#d9a500",
   },
   green: {
-    traits: "平和 / 稳定 / 协调",
-    description: "你更在乎舒适、关系和节奏感，擅长让事情自然地落到合适的位置。",
     accent: "#2f8f5b",
   },
+};
+
+const resultColorLabels: Record<ColorKey, string> = {
+  red: "Red",
+  blue: "Blue",
+  yellow: "Yellow",
+  green: "Green",
 };
 
 export function PersonalityQuiz() {
@@ -207,19 +203,27 @@ export function PersonalityQuiz() {
 
   async function copyResult() {
     const ranked = rankScores(scores)
-      .map(([color, score], index) => `${index + 1}. ${colorLabels[color]}：${score} 分`)
+      .map(([color, score], index) => `${index + 1}. ${resultColorLabels[color]}: ${score}`)
       .join("\n");
-    const resultTitle = summary.isDominantTie
-      ? `主导颜色并列：${summary.dominantColors.map((color) => colorLabels[color]).join(" / ")}`
-      : `主导颜色：${colorLabels[summary.dominant]}`;
+    const resultTitle = `Dominant Colour: ${summary.dominantColors.map((color) => resultColorLabels[color]).join(" / ")}`;
     const secondary =
       summary.secondaryColors.length > 0
-        ? `\n次要颜色${summary.isSecondaryTie ? "并列" : ""}：${summary.secondaryColors
-            .map((color) => colorLabels[color])
+        ? `\nSecondary Colour: ${summary.secondaryColors
+            .map((color) => resultColorLabels[color])
             .join(" / ")}`
-        : "";
+        : "\nSecondary Colour: None";
 
-    await navigator.clipboard.writeText(`${resultTitle}${secondary}\n\n${ranked}`);
+    const shareText = `Results\n${resultTitle}${secondary}\n\nScores\n${ranked}`;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: "Personality Colour Results",
+        text: shareText,
+      });
+    } else {
+      await navigator.clipboard.writeText(shareText);
+    }
+
     setCopiedResult(true);
     window.setTimeout(() => setCopiedResult(false), 1800);
   }
@@ -277,27 +281,22 @@ export function PersonalityQuiz() {
 
   if (phase === "result") {
     const dominantColor = summary.dominant;
-    const dominantDetail = summary.isDominantTie
-      ? {
-          traits: "复合倾向 / 弹性 / 多面",
-          description: "你的最高分颜色彼此接近，说明你可能会根据场景切换不同的行动方式。",
-          accent: resultDetails[dominantColor].accent,
-        }
-      : resultDetails[dominantColor];
+    const dominantDetail = resultDetails[dominantColor];
     const rankedScores = rankScores(scores);
     const topScore = rankedScores[0][1] || 1;
-    const resultTitle = summary.isDominantTie
-      ? summary.dominantColors.map((color) => colorLabels[color]).join(" / ")
-      : colorLabels[dominantColor];
-    const supportingColors = summary.isDominantTie ? summary.dominantColors : summary.secondaryColors;
+    const resultTitle = summary.dominantColors.map((color) => resultColorLabels[color]).join(" / ");
+    const secondaryTitle =
+      summary.secondaryColors.length > 0
+        ? summary.secondaryColors.map((color) => resultColorLabels[color]).join(" / ")
+        : "None";
 
     return (
       <main className="app-shell result-shell">
         <section className="result-layout personality-result">
           <div className="result-summary reveal-one">
-            <p className="quiz-title-small">测试完成</p>
-            <h1>你的性格色彩卡片已生成。</h1>
-            <p>这不是标签，而是一张用来理解自己行动方式的简洁快照。</p>
+            <p className="quiz-title-small">Results</p>
+            <h1>Personality Card</h1>
+            <p>30 questions completed.</p>
           </div>
 
           <div
@@ -305,25 +304,29 @@ export function PersonalityQuiz() {
             style={{ "--result-accent": dominantDetail.accent } as CSSVariableStyle}
           >
             <div className="card-topline">
-              <span>PERSONALITY COLOR</span>
+              <span>RESULTS</span>
               <span>30 / 30</span>
             </div>
             <div className="card-identity">
               <span className="card-color-dot" aria-hidden="true" />
               <div>
-                <p>主导颜色</p>
+                <p>Dominant Colour</p>
                 <h2>{resultTitle}</h2>
               </div>
             </div>
-            <p className="card-traits">{dominantDetail.traits}</p>
-            <p className="card-description">{dominantDetail.description}</p>
-            <div className="card-meta">
-              <span>{rankedScores[0][1]} / {questions.length}</span>
-              <span>
-                {supportingColors.length > 0
-                  ? `相邻色：${supportingColors.map((color) => colorLabels[color]).join(" / ")}`
-                  : "色彩分布均衡"}
-              </span>
+            <div className="result-fields">
+              <p>
+                <span>Dominant Colour</span>
+                <strong>{resultTitle}</strong>
+              </p>
+              <p>
+                <span>Secondary Colour</span>
+                <strong>{secondaryTitle}</strong>
+              </p>
+              <p>
+                <span>Dominant Score</span>
+                <strong>{rankedScores[0][1]} / {questions.length}</strong>
+              </p>
             </div>
           </div>
 
@@ -336,7 +339,7 @@ export function PersonalityQuiz() {
               >
                 <div>
                   <span className="score-rank color-rank">{index + 1}</span>
-                  <span>{colorLabels[color]}</span>
+                  <span>{resultColorLabels[color]}</span>
                 </div>
                 <div className="score-meter" aria-hidden="true">
                   <span style={{ width: `${Math.max((score / topScore) * 100, 4)}%` }} />
@@ -349,7 +352,7 @@ export function PersonalityQuiz() {
           <div className="result-actions reveal-three">
             <button className="primary-button" type="button" onClick={copyResult}>
               <Clipboard size={17} aria-hidden="true" />
-              {copiedResult ? "已复制结果" : "复制结果"}
+              {copiedResult ? "已分享结果" : "分享结果"}
             </button>
             <button className="primary-button" type="button" onClick={() => setReviewOpen(true)}>
               <Edit3 size={17} aria-hidden="true" />
