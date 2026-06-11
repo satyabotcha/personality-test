@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, Check, ChevronRight, Clipboard, Edit3, RotateCcw } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { AnswerId } from "@/data/questions";
 import { questions } from "@/data/questions";
 import {
@@ -10,6 +10,7 @@ import {
   rankScores,
   summarizeScores,
   type AnswerMap,
+  type ColorKey,
 } from "@/lib/scoring";
 
 const storageKey = "personality-color-quiz:v1";
@@ -20,6 +21,38 @@ type StoredState = {
   answers: AnswerMap;
   currentIndex: number;
   phase: QuizPhase;
+};
+
+type CSSVariableStyle = CSSProperties & Record<`--${string}`, string>;
+
+const resultDetails: Record<
+  ColorKey,
+  {
+    traits: string;
+    description: string;
+    accent: string;
+  }
+> = {
+  red: {
+    traits: "热情 / 表达 / 行动力",
+    description: "你更容易被新鲜感、连接感和即时反馈点燃，擅长把气氛带起来。",
+    accent: "#e84b42",
+  },
+  blue: {
+    traits: "细腻 / 秩序 / 深度",
+    description: "你倾向于先理解本质，再做出选择，重视准确、承诺和长期稳定。",
+    accent: "#2f68c9",
+  },
+  yellow: {
+    traits: "目标 / 推进 / 掌控",
+    description: "你看重结果和效率，遇到挑战时通常会自然地走到前面。",
+    accent: "#d9a500",
+  },
+  green: {
+    traits: "平和 / 稳定 / 协调",
+    description: "你更在乎舒适、关系和节奏感，擅长让事情自然地落到合适的位置。",
+    accent: "#2f8f5b",
+  },
 };
 
 export function PersonalityQuiz() {
@@ -242,42 +275,70 @@ export function PersonalityQuiz() {
   }
 
   if (phase === "result") {
+    const dominantColor = summary.dominant;
+    const dominantDetail = summary.isDominantTie
+      ? {
+          traits: "复合倾向 / 弹性 / 多面",
+          description: "你的最高分颜色彼此接近，说明你可能会根据场景切换不同的行动方式。",
+          accent: resultDetails[dominantColor].accent,
+        }
+      : resultDetails[dominantColor];
+    const rankedScores = rankScores(scores);
+    const topScore = rankedScores[0][1] || 1;
+    const resultTitle = summary.isDominantTie
+      ? summary.dominantColors.map((color) => colorLabels[color]).join(" / ")
+      : colorLabels[dominantColor];
+    const supportingColors = summary.isDominantTie ? summary.dominantColors : summary.secondaryColors;
+
     return (
       <main className="app-shell result-shell">
-        <section className="result-layout">
+        <section className="result-layout personality-result">
           <div className="result-summary reveal-one">
-            <p className="quiz-title-small">测试结果</p>
-            {summary.isDominantTie ? (
-              <>
-                <h1>主导颜色并列：{summary.dominantColors.map((color) => colorLabels[color]).join(" / ")}</h1>
-                {summary.secondaryColors.length > 0 ? (
-                  <p>
-                    次要颜色{summary.isSecondaryTie ? "并列" : ""}：
-                    {summary.secondaryColors.map((color) => colorLabels[color]).join(" / ")}
-                  </p>
-                ) : (
-                  <p>所有颜色分数并列。</p>
-                )}
-              </>
-            ) : (
-              <>
-                <h1>主导颜色：{colorLabels[summary.dominant]}</h1>
-                <p>
-                  次要颜色{summary.isSecondaryTie ? "并列" : ""}：
-                  {summary.secondaryColors.length > 0
-                    ? summary.secondaryColors.map((color) => colorLabels[color]).join(" / ")
-                    : "暂无"}
-                </p>
-              </>
-            )}
+            <p className="quiz-title-small">测试完成</p>
+            <h1>你的性格色彩卡片已生成。</h1>
+            <p>这不是标签，而是一张用来理解自己行动方式的简洁快照。</p>
           </div>
 
-          <div className="score-panel reveal-two" aria-label="分数明细">
-            {rankScores(scores).map(([color, score], index) => (
-              <div className="score-row" key={color}>
+          <div
+            className="personality-card reveal-two"
+            style={{ "--result-accent": dominantDetail.accent } as CSSVariableStyle}
+          >
+            <div className="card-topline">
+              <span>PERSONALITY COLOR</span>
+              <span>30 / 30</span>
+            </div>
+            <div className="card-identity">
+              <span className="card-color-dot" aria-hidden="true" />
+              <div>
+                <p>主导颜色</p>
+                <h2>{resultTitle}</h2>
+              </div>
+            </div>
+            <p className="card-traits">{dominantDetail.traits}</p>
+            <p className="card-description">{dominantDetail.description}</p>
+            <div className="card-meta">
+              <span>{rankedScores[0][1]} / {questions.length}</span>
+              <span>
+                {supportingColors.length > 0
+                  ? `相邻色：${supportingColors.map((color) => colorLabels[color]).join(" / ")}`
+                  : "色彩分布均衡"}
+              </span>
+            </div>
+          </div>
+
+          <div className="score-panel card-score-panel reveal-two" aria-label="分数明细">
+            {rankedScores.map(([color, score], index) => (
+              <div
+                className="score-row card-score-row"
+                key={color}
+                style={{ "--score-color": resultDetails[color].accent } as CSSVariableStyle}
+              >
                 <div>
-                  <span className="score-rank">{index + 1}</span>
+                  <span className="score-rank color-rank">{index + 1}</span>
                   <span>{colorLabels[color]}</span>
+                </div>
+                <div className="score-meter" aria-hidden="true">
+                  <span style={{ width: `${Math.max((score / topScore) * 100, 4)}%` }} />
                 </div>
                 <strong>{score} 分</strong>
               </div>

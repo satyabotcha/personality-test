@@ -417,9 +417,145 @@ button {
   overflow: hidden;
 }
 
+.personality-result {
+  grid-template-columns: minmax(0, 0.86fr) minmax(360px, 1.14fr);
+  grid-template-areas:
+    "summary card"
+    "actions card"
+    "scores scores";
+  column-gap: clamp(22px, 4vw, 48px);
+  row-gap: clamp(16px, 2.8vh, 24px);
+}
+
 .result-summary {
   display: grid;
   gap: 14px;
+}
+
+.personality-result .result-summary {
+  grid-area: summary;
+  align-self: end;
+}
+
+.personality-card {
+  --result-accent: #e84b42;
+  position: relative;
+  grid-area: card;
+  display: grid;
+  min-height: min(520px, calc(100dvh - 120px));
+  align-content: space-between;
+  gap: clamp(22px, 4vh, 42px);
+  padding: clamp(24px, 4.4vw, 44px);
+  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9)),
+    linear-gradient(135deg, color-mix(in srgb, var(--result-accent) 16%, white), #ffffff 56%);
+  border: 1px solid color-mix(in srgb, var(--result-accent) 24%, var(--line));
+  border-radius: var(--radius);
+  box-shadow:
+    0 34px 90px rgba(23, 23, 23, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.personality-card::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 6px;
+  background: var(--result-accent);
+  content: "";
+}
+
+.personality-card::after {
+  position: absolute;
+  right: clamp(22px, 4vw, 46px);
+  bottom: clamp(22px, 4vw, 46px);
+  width: clamp(90px, 13vw, 150px);
+  aspect-ratio: 1;
+  background: color-mix(in srgb, var(--result-accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--result-accent) 14%, transparent);
+  border-radius: 50%;
+  content: "";
+}
+
+.card-topline,
+.card-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+}
+
+.card-identity {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: clamp(14px, 2.2vw, 22px);
+  align-items: center;
+}
+
+.card-color-dot {
+  width: clamp(46px, 6vw, 68px);
+  height: clamp(46px, 6vw, 68px);
+  flex: 0 0 auto;
+  background: var(--result-accent);
+  border-radius: 50%;
+  box-shadow:
+    0 16px 36px color-mix(in srgb, var(--result-accent) 26%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.card-identity p,
+.card-traits,
+.card-description {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.card-identity p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 720;
+}
+
+.card-identity h2 {
+  margin: 4px 0 0;
+  font-size: clamp(3.2rem, 8vw, 6.6rem);
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 0.94;
+}
+
+.card-traits {
+  width: fit-content;
+  padding: 8px 10px;
+  color: color-mix(in srgb, var(--result-accent) 74%, var(--text));
+  background: color-mix(in srgb, var(--result-accent) 8%, white);
+  border: 1px solid color-mix(in srgb, var(--result-accent) 16%, var(--line));
+  border-radius: var(--radius-small);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 760;
+}
+
+.card-description {
+  max-width: 30rem;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.78;
+}
+
+.personality-result .result-actions {
+  grid-area: actions;
+  align-self: start;
 }
 
 .score-panel {
@@ -428,6 +564,10 @@ button {
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--surface);
+}
+
+.card-score-panel {
+  grid-area: scores;
 }
 
 .score-row {
@@ -476,6 +616,33 @@ button {
   background: var(--surface-strong);
   border-radius: var(--radius-small);
   font-weight: 740;
+}
+
+.card-score-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.72fr) minmax(120px, 1fr) auto;
+  min-height: 54px;
+}
+
+.color-rank {
+  --score-color: var(--muted);
+  color: color-mix(in srgb, var(--score-color) 72%, var(--text));
+  background: color-mix(in srgb, var(--score-color) 10%, var(--surface-strong));
+}
+
+.score-meter {
+  height: 6px;
+  overflow: hidden;
+  background: var(--surface-strong);
+  border-radius: 999px;
+}
+
+.score-meter span {
+  display: block;
+  height: 100%;
+  background: var(--score-color, var(--text));
+  border-radius: inherit;
+  animation: score-meter-in 620ms ease both;
 }
 
 .reveal-one,
@@ -598,6 +765,18 @@ button {
     padding: 20px;
   }
 
+  .personality-result {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "summary"
+      "card"
+      "scores"
+      "actions";
+    align-content: start;
+    gap: 14px;
+    overflow: auto;
+  }
+
   .intro-panel h1,
   .question-body h1,
   .result-summary h1 {
@@ -617,6 +796,58 @@ button {
   .intro-panel p {
     font-size: clamp(0.82rem, 3.6vw, 0.95rem);
     line-height: 1.68;
+  }
+
+  .personality-result .result-summary {
+    gap: 8px;
+  }
+
+  .personality-result .result-summary p {
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .personality-card {
+    min-height: 360px;
+    gap: 20px;
+    padding: 24px 20px 20px;
+  }
+
+  .card-topline,
+  .card-meta {
+    align-items: flex-start;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+
+  .card-meta {
+    display: grid;
+  }
+
+  .card-identity {
+    gap: 14px;
+  }
+
+  .card-identity h2 {
+    font-size: clamp(3rem, 17vw, 4.6rem);
+  }
+
+  .card-traits {
+    max-width: 100%;
+    font-size: 0.92rem;
+  }
+
+  .card-description {
+    font-size: 0.9rem;
+    line-height: 1.62;
+  }
+
+  .card-score-row {
+    grid-template-columns: minmax(86px, 0.8fr) minmax(72px, 1fr) auto;
+    min-height: 48px;
+    gap: 10px;
+    padding: 0 12px;
+    font-size: 0.88rem;
   }
 
   .intro-meta span {
@@ -696,6 +927,11 @@ button {
     padding: 0 12px;
   }
 
+  .result-actions .primary-button,
+  .result-actions .ghost-button {
+    flex: 1 1 100%;
+  }
+
   .quiz-footer .ghost-button,
   .quiz-footer .primary-button {
     flex: 1;
@@ -760,6 +996,18 @@ button {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes score-meter-in {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 }
 
