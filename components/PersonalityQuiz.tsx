@@ -79,6 +79,7 @@ export function PersonalityQuiz() {
   const questionTextLength =
     currentQuestion.prompt.length + currentQuestion.answers.reduce((total, answer) => total + answer.text.length, 0);
   const isCompactQuestion = questionTextLength > 190;
+  const headerStatusText = currentIndex === questions.length - 1 ? "最后 1 题" : `已答 ${answeredCount}`;
 
   useEffect(() => {
     try {
@@ -386,7 +387,7 @@ export function PersonalityQuiz() {
             </div>
           </div>
           <button className="text-button" type="button" onClick={() => setReviewOpen(true)}>
-            已答 {answeredCount}
+            {headerStatusText}
           </button>
         </header>
 
