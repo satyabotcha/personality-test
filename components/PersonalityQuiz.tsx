@@ -175,10 +175,15 @@ export function PersonalityQuiz() {
     const ranked = rankScores(scores)
       .map(([color, score], index) => `${index + 1}. ${colorLabels[color]}：${score} 分`)
       .join("\n");
-    const resultTitle = summary.isTie
-      ? `结果接近：${summary.tiedColors.map((color) => colorLabels[color]).join(" / ")}`
+    const resultTitle = summary.isDominantTie
+      ? `主导颜色并列：${summary.dominantColors.map((color) => colorLabels[color]).join(" / ")}`
       : `主导颜色：${colorLabels[summary.dominant]}`;
-    const secondary = !summary.isTie && summary.secondary ? `\n次要颜色：${colorLabels[summary.secondary]}` : "";
+    const secondary =
+      summary.secondaryColors.length > 0
+        ? `\n次要颜色${summary.isSecondaryTie ? "并列" : ""}：${summary.secondaryColors
+            .map((color) => colorLabels[color])
+            .join(" / ")}`
+        : "";
 
     await navigator.clipboard.writeText(`${resultTitle}${secondary}\n\n${ranked}`);
     setCopiedResult(true);
@@ -242,15 +247,27 @@ export function PersonalityQuiz() {
         <section className="result-layout">
           <div className="result-summary reveal-one">
             <p className="quiz-title-small">测试结果</p>
-            {summary.isTie ? (
+            {summary.isDominantTie ? (
               <>
-                <h1>结果接近：{summary.tiedColors.map((color) => colorLabels[color]).join(" / ")}</h1>
-                <p>最高分之间相差不超过 1 分，建议按并列倾向理解。</p>
+                <h1>主导颜色并列：{summary.dominantColors.map((color) => colorLabels[color]).join(" / ")}</h1>
+                {summary.secondaryColors.length > 0 ? (
+                  <p>
+                    次要颜色{summary.isSecondaryTie ? "并列" : ""}：
+                    {summary.secondaryColors.map((color) => colorLabels[color]).join(" / ")}
+                  </p>
+                ) : (
+                  <p>所有颜色分数并列。</p>
+                )}
               </>
             ) : (
               <>
                 <h1>主导颜色：{colorLabels[summary.dominant]}</h1>
-                <p>次要颜色：{summary.secondary ? colorLabels[summary.secondary] : "暂无"}</p>
+                <p>
+                  次要颜色{summary.isSecondaryTie ? "并列" : ""}：
+                  {summary.secondaryColors.length > 0
+                    ? summary.secondaryColors.map((color) => colorLabels[color]).join(" / ")
+                    : "暂无"}
+                </p>
               </>
             )}
           </div>

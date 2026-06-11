@@ -60,16 +60,20 @@ export function rankScores(scores: Scores) {
 export function summarizeScores(scores: Scores) {
   const ranked = rankScores(scores);
   const topScore = ranked[0][1];
-  const closeThreshold = 1;
-  const tiedColors = ranked
-    .filter(([, score]) => topScore - score <= closeThreshold)
-    .map(([color]) => color);
+  const dominantColors = ranked.filter(([, score]) => score === topScore).map(([color]) => color);
+  const secondaryScore = ranked.find(([, score]) => score < topScore)?.[1] ?? null;
+  const secondaryColors =
+    secondaryScore === null
+      ? []
+      : ranked.filter(([, score]) => score === secondaryScore).map(([color]) => color);
 
   return {
     ranked,
     dominant: ranked[0][0],
-    secondary: tiedColors.length > 1 ? null : ranked[1][0],
-    tiedColors: tiedColors.length > 1 ? tiedColors : [],
-    isTie: tiedColors.length > 1,
+    secondary: secondaryColors[0] ?? null,
+    dominantColors,
+    secondaryColors,
+    isDominantTie: dominantColors.length > 1,
+    isSecondaryTie: secondaryColors.length > 1,
   };
 }
