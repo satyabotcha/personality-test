@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowLeft, Check, ChevronRight, Edit3, RotateCcw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Check, ChevronRight, Clipboard, Edit3, RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AnswerId } from "@/data/questions";
 import { questions } from "@/data/questions";
 import {
@@ -22,23 +22,19 @@ type StoredState = {
   phase: QuizPhase;
 };
 
-function getInitialState(): StoredState {
-  return {
-    answers: {},
-    currentIndex: 0,
-    phase: "intro",
-  };
-}
-
 export function PersonalityQuiz() {
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [phase, setPhase] = useState<QuizPhase>("intro");
   const [reviewOpen, setReviewOpen] = useState(false);
   const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [copiedResult, setCopiedResult] = useState(false);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentQuestion = questions[currentIndex];
   const answeredCount = Object.keys(answers).length;
+  const remainingCount = questions.length - answeredCount;
   const progressPercent =
     phase === "result"
       ? 100
@@ -47,6 +43,9 @@ export function PersonalityQuiz() {
   const scores = useMemo(() => calculateScores(answers), [answers]);
   const summary = useMemo(() => summarizeScores(scores), [scores]);
   const allAnswered = answeredCount === questions.length;
+  const questionTextLength =
+    currentQuestion.prompt.length + currentQuestion.answers.reduce((total, answer) => total + answer.text.length, 0);
+  const isCompactQuestion = questionTextLength > 190;
 
   useEffect(() => {
     try {
@@ -70,6 +69,14 @@ export function PersonalityQuiz() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      if (advanceTimerRef.current) {
+        clearTimeout(advanceTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!hasLoadedStorage) {
       return;
     }
@@ -83,10 +90,32 @@ export function PersonalityQuiz() {
   }, [answers, currentIndex, hasLoadedStorage, phase]);
 
   function selectAnswer(answerId: AnswerId) {
+    if (isAdvancing) {
+      return;
+    }
+
     setAnswers((previous) => ({
       ...previous,
       [currentQuestion.id]: answerId,
     }));
+
+    setIsAdvancing(true);
+
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+    }
+
+    advanceTimerRef.current = setTimeout(() => {
+      setIsAdvancing(false);
+      setReviewOpen(false);
+
+      if (allAnswered || currentIndex === questions.length - 1) {
+        setPhase("result");
+        return;
+      }
+
+      setCurrentIndex((index) => Math.min(index + 1, questions.length - 1));
+    }, 430);
   }
 
   function goNext() {
@@ -110,6 +139,11 @@ export function PersonalityQuiz() {
   }
 
   function goBack() {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      setIsAdvancing(false);
+    }
+
     if (currentIndex === 0) {
       setPhase("intro");
       return;
@@ -119,6 +153,11 @@ export function PersonalityQuiz() {
   }
 
   function editQuestion(index: number) {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+    }
+
+    setIsAdvancing(false);
     setCurrentIndex(index);
     setPhase("quiz");
     setReviewOpen(false);
@@ -130,6 +169,20 @@ export function PersonalityQuiz() {
     setPhase("intro");
     setReviewOpen(false);
     window.localStorage.removeItem(storageKey);
+  }
+
+  async function copyResult() {
+    const ranked = rankScores(scores)
+      .map(([color, score], index) => `${index + 1}. ${colorLabels[color]}：${score} 分`)
+      .join("\n");
+    const resultTitle = summary.isTie
+      ? `结果接近：${summary.tiedColors.map((color) => colorLabels[color]).join(" / ")}`
+      : `主导颜色：${colorLabels[summary.dominant]}`;
+    const secondary = !summary.isTie && summary.secondary ? `\n次要颜色：${colorLabels[summary.secondary]}` : "";
+
+    await navigator.clipboard.writeText(`${resultTitle}${secondary}\n\n${ranked}`);
+    setCopiedResult(true);
+    window.setTimeout(() => setCopiedResult(false), 1800);
   }
 
   if (!hasLoadedStorage) {
@@ -149,6 +202,11 @@ export function PersonalityQuiz() {
           <div className="intro-copy">
             <p className="quiz-title-small">基础版性格色彩测试题</p>
             <h1>基础版性格色彩测试题</h1>
+            <div className="intro-meta" aria-label="测试信息">
+              <span>30 题</span>
+              <span>约 3-5 分钟</span>
+              <span>逐题作答</span>
+            </div>
             <p>
               FPA性格色彩用“红、蓝、黄、绿”四色代替人的性格类型，通过对“性格色彩密码”的解读，帮助你学会以“有‘色’眼睛”洞察人性，增强对人生的洞察力，并修炼个性，从而掌握自己的命运。本测试题目旨在测试你的“性格”而非你的“个性”，测试你的“先天”而非你的“后天”。如果你在做题过程中，严格符合测试说明，你将了解自己性格本源的力量。
             </p>
@@ -180,9 +238,9 @@ export function PersonalityQuiz() {
 
   if (phase === "result") {
     return (
-      <main className="app-shell">
+      <main className="app-shell result-shell">
         <section className="result-layout">
-          <div className="result-summary">
+          <div className="result-summary reveal-one">
             <p className="quiz-title-small">测试结果</p>
             {summary.isTie ? (
               <>
@@ -197,7 +255,7 @@ export function PersonalityQuiz() {
             )}
           </div>
 
-          <div className="score-panel" aria-label="分数明细">
+          <div className="score-panel reveal-two" aria-label="分数明细">
             {rankScores(scores).map(([color, score], index) => (
               <div className="score-row" key={color}>
                 <div>
@@ -209,7 +267,11 @@ export function PersonalityQuiz() {
             ))}
           </div>
 
-          <div className="result-actions">
+          <div className="result-actions reveal-three">
+            <button className="primary-button" type="button" onClick={copyResult}>
+              <Clipboard size={17} aria-hidden="true" />
+              {copiedResult ? "已复制结果" : "复制结果"}
+            </button>
             <button className="primary-button" type="button" onClick={() => setReviewOpen(true)}>
               <Edit3 size={17} aria-hidden="true" />
               查看并修改答案
@@ -231,7 +293,14 @@ export function PersonalityQuiz() {
   const selectedAnswer = answers[currentQuestion.id];
 
   return (
-    <main className="app-shell">
+    <main className="app-shell quiz-shell">
+      <QuestionMap
+        answers={answers}
+        currentIndex={currentIndex}
+        onEdit={editQuestion}
+        progressPercent={progressPercent}
+      />
+
       <section className="quiz-card" aria-labelledby="question-title">
         <header className="quiz-header">
           <button className="icon-button" type="button" onClick={goBack} aria-label="返回上一题">
@@ -250,7 +319,10 @@ export function PersonalityQuiz() {
           </button>
         </header>
 
-        <div className="question-body">
+        <div
+          className={`question-body${isAdvancing ? " advancing" : ""}${isCompactQuestion ? " compact" : ""}`}
+          key={currentQuestion.id}
+        >
           <p className="question-kicker">请选择最贴近你的描述</p>
           <h1 id="question-title">{currentQuestion.prompt}</h1>
 
@@ -265,6 +337,7 @@ export function PersonalityQuiz() {
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
+                  disabled={isAdvancing}
                   onClick={() => selectAnswer(answer.id)}
                 >
                   <span className="answer-letter">{answer.id}</span>
@@ -277,6 +350,9 @@ export function PersonalityQuiz() {
         </div>
 
         <footer className="quiz-footer">
+          <div className="quiz-footnote">
+            {isAdvancing ? "已选择，正在进入下一题..." : remainingCount > 0 ? `还剩 ${remainingCount} 题` : "全部完成"}
+          </div>
           <button className="ghost-button" type="button" onClick={goBack}>
             返回
           </button>
@@ -291,6 +367,47 @@ export function PersonalityQuiz() {
         <ReviewPanel answers={answers} onClose={() => setReviewOpen(false)} onEdit={editQuestion} />
       ) : null}
     </main>
+  );
+}
+
+function QuestionMap({
+  answers,
+  currentIndex,
+  onEdit,
+  progressPercent,
+}: {
+  answers: AnswerMap;
+  currentIndex: number;
+  onEdit: (index: number) => void;
+  progressPercent: number;
+}) {
+  return (
+    <aside className="question-map" aria-label="题目导航">
+      <div className="map-copy">
+        <p className="quiz-title-small">答题进度</p>
+        <h2>{progressPercent}%</h2>
+        <span>点击任意题号可返回修改</span>
+      </div>
+
+      <div className="map-grid">
+        {questions.map((question, index) => {
+          const isAnswered = Boolean(answers[question.id]);
+          const isCurrent = index === currentIndex;
+
+          return (
+            <button
+              className={`map-dot${isAnswered ? " answered" : ""}${isCurrent ? " current" : ""}`}
+              key={question.id}
+              type="button"
+              aria-label={`第 ${question.id} 题${isAnswered ? "，已答" : "，未答"}`}
+              onClick={() => onEdit(index)}
+            >
+              {question.id}
+            </button>
+          );
+        })}
+      </div>
+    </aside>
   );
 }
 
