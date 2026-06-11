@@ -52,8 +52,8 @@ button {
 }
 
 .quiz-shell {
-  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
   place-items: stretch;
   padding: 22px;
 }
@@ -114,12 +114,12 @@ button {
 }
 
 .question-body h1 {
-  max-width: 15em;
+  max-width: 18em;
   margin: 0;
-  font-size: clamp(2.25rem, 4.6vw, 4.45rem);
+  font-size: clamp(2rem, 3.4vw, 3.7rem);
   font-weight: 740;
   letter-spacing: 0;
-  line-height: 1.12;
+  line-height: 1.1;
 }
 
 .intro-panel p,
@@ -201,9 +201,9 @@ button {
 .question-body {
   display: grid;
   align-content: center;
-  gap: clamp(16px, 3vh, 30px);
+  gap: clamp(12px, 2.2vh, 22px);
   min-height: 0;
-  padding: clamp(22px, 5vh, 62px) clamp(28px, 6vw, 76px);
+  padding: clamp(18px, 3.4vh, 46px) clamp(28px, 6vw, 76px);
   overflow: hidden;
   animation: question-in 260ms ease both;
 }
@@ -230,8 +230,8 @@ button {
   gap: 14px;
   align-items: center;
   width: 100%;
-  min-height: min(74px, 11vh);
-  padding: clamp(12px, 2vh, 18px);
+  min-height: min(66px, 10vh);
+  padding: clamp(10px, 1.7vh, 16px);
   color: var(--text);
   text-align: left;
   background: var(--surface);
@@ -239,7 +239,7 @@ button {
   border-radius: var(--radius);
   cursor: pointer;
   font-size: clamp(1rem, 1.1vw, 1.08rem);
-  line-height: 1.62;
+  line-height: 1.5;
   box-shadow: 0 1px 0 rgba(23, 23, 23, 0.03);
   transition:
     background 160ms ease,
@@ -479,7 +479,7 @@ button {
 }
 
 .question-map {
-  display: grid;
+  display: none;
   align-content: start;
   gap: clamp(12px, 2.3vh, 22px);
   height: calc(100dvh - 44px);
@@ -795,12 +795,12 @@ button {
 
 @media (min-width: 1280px) {
   .quiz-shell {
-    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .question-body {
-    padding-right: clamp(56px, 8vw, 120px);
-    padding-left: clamp(56px, 8vw, 120px);
+    padding-right: clamp(64px, 10vw, 180px);
+    padding-left: clamp(64px, 10vw, 180px);
   }
 }
 
