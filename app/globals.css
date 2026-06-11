@@ -478,79 +478,6 @@ button {
   font-weight: 740;
 }
 
-.question-map {
-  display: none;
-  align-content: start;
-  gap: clamp(12px, 2.3vh, 22px);
-  height: calc(100dvh - 44px);
-  min-height: 0;
-  padding: clamp(16px, 2.7vh, 24px);
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--soft-shadow);
-  backdrop-filter: blur(18px);
-  overflow: hidden;
-}
-
-.map-copy {
-  display: grid;
-  gap: 8px;
-}
-
-.map-copy h2 {
-  margin: 0;
-  font-size: clamp(2.2rem, 4vw, 4.1rem);
-  line-height: 1;
-}
-
-.map-copy span {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-.map-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.map-dot {
-  display: grid;
-  width: 100%;
-  aspect-ratio: 1;
-  place-items: center;
-  color: var(--muted);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-small);
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 760;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.map-dot:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-1px);
-}
-
-.map-dot.answered {
-  color: var(--text);
-  background: var(--surface-strong);
-}
-
-.map-dot.current {
-  color: #ffffff;
-  background: var(--text);
-  border-color: var(--text);
-}
-
 .reveal-one,
 .reveal-two,
 .reveal-three {
@@ -652,10 +579,6 @@ button {
   .quiz-shell {
     display: grid;
     grid-template-columns: 1fr;
-  }
-
-  .question-map {
-    display: none;
   }
 
   .intro-panel,

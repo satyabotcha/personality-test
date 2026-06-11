@@ -311,13 +311,6 @@ export function PersonalityQuiz() {
 
   return (
     <main className="app-shell quiz-shell">
-      <QuestionMap
-        answers={answers}
-        currentIndex={currentIndex}
-        onEdit={editQuestion}
-        progressPercent={progressPercent}
-      />
-
       <section className="quiz-card" aria-labelledby="question-title">
         <header className="quiz-header">
           <button className="icon-button" type="button" onClick={goBack} aria-label="返回上一题">
@@ -384,47 +377,6 @@ export function PersonalityQuiz() {
         <ReviewPanel answers={answers} onClose={() => setReviewOpen(false)} onEdit={editQuestion} />
       ) : null}
     </main>
-  );
-}
-
-function QuestionMap({
-  answers,
-  currentIndex,
-  onEdit,
-  progressPercent,
-}: {
-  answers: AnswerMap;
-  currentIndex: number;
-  onEdit: (index: number) => void;
-  progressPercent: number;
-}) {
-  return (
-    <aside className="question-map" aria-label="题目导航">
-      <div className="map-copy">
-        <p className="quiz-title-small">答题进度</p>
-        <h2>{progressPercent}%</h2>
-        <span>点击任意题号可返回修改</span>
-      </div>
-
-      <div className="map-grid">
-        {questions.map((question, index) => {
-          const isAnswered = Boolean(answers[question.id]);
-          const isCurrent = index === currentIndex;
-
-          return (
-            <button
-              className={`map-dot${isAnswered ? " answered" : ""}${isCurrent ? " current" : ""}`}
-              key={question.id}
-              type="button"
-              aria-label={`第 ${question.id} 题${isAnswered ? "，已答" : "，未答"}`}
-              onClick={() => onEdit(index)}
-            >
-              {question.id}
-            </button>
-          );
-        })}
-      </div>
-    </aside>
   );
 }
 
