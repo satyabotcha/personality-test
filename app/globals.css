@@ -44,6 +44,8 @@ button {
 .app-shell {
   position: relative;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
   height: 100vh;
   height: 100dvh;
   place-items: center;
@@ -84,7 +86,7 @@ button {
   display: grid;
   gap: clamp(18px, 4vh, 34px);
   align-content: center;
-  height: min(760px, calc(100dvh - 48px));
+  height: min(760px, calc(100dvh - 98px));
   min-height: 0;
   padding: clamp(24px, 5vw, 56px);
   overflow: hidden;
@@ -158,9 +160,39 @@ button {
   gap: 12px;
 }
 
+.language-pill {
+  position: relative;
+  z-index: 5;
+  justify-self: end;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--text);
+  border-radius: 999px;
+  box-shadow: 0 12px 34px rgba(23, 23, 23, 0.14);
+}
+
+.language-pill button {
+  min-width: 52px;
+  min-height: 32px;
+  padding: 0 12px;
+  color: rgba(255, 255, 255, 0.68);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 780;
+}
+
+.language-pill button.active {
+  color: var(--text);
+  background: var(--surface);
+}
+
 .quiz-card {
   display: grid;
-  height: calc(100dvh - 44px);
+  height: calc(100dvh - 94px);
   min-height: 0;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
@@ -412,7 +444,7 @@ button {
   gap: clamp(14px, 3vh, 24px);
   align-content: start;
   width: min(100%, var(--content-width));
-  height: calc(100dvh - 48px);
+  height: calc(100dvh - 98px);
   min-height: 0;
   padding: clamp(24px, 5vw, 48px);
   overflow-y: auto;
@@ -964,7 +996,12 @@ button {
 @media (max-width: 680px) {
   .app-shell {
     align-items: stretch;
+    gap: 10px;
     padding: 0;
+  }
+
+  .language-pill {
+    margin: 10px 10px 0 0;
   }
 
   .quiz-shell {
@@ -976,7 +1013,7 @@ button {
   .quiz-card,
   .result-layout {
     width: 100%;
-    height: 100dvh;
+    height: calc(100dvh - 58px);
     min-height: 0;
     border: 0;
     border-radius: 0;
