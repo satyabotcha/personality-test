@@ -24,6 +24,8 @@ html {
   overflow: hidden;
   background: var(--background);
   color: var(--text);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -31,6 +33,8 @@ body {
   margin: 0;
   overflow: hidden;
   font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   background:
     linear-gradient(120deg, rgba(255, 255, 255, 0.92), rgba(247, 247, 245, 0.92)),
     radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.9) 0, transparent 32rem),
@@ -286,6 +290,11 @@ button {
     border-color 160ms ease,
     box-shadow 160ms ease,
     transform 160ms ease;
+}
+
+.answer-option span:not(.answer-letter) {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .question-body.compact {
@@ -1142,9 +1151,9 @@ button {
 
   .answer-option {
     min-height: 0;
-    padding: 12px;
-    font-size: clamp(0.9rem, 4vw, 1rem);
-    line-height: 1.45;
+    padding: 10px 12px;
+    font-size: clamp(0.86rem, 3.65vw, 0.95rem);
+    line-height: 1.36;
   }
 
   .question-body.compact {

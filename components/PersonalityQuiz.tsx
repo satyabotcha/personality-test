@@ -213,7 +213,7 @@ export function PersonalityQuiz() {
   const allAnswered = answeredCount === questions.length;
   const questionTextLength =
     currentQuestion.prompt.length + currentQuestion.answers.reduce((total, answer) => total + answer.text.length, 0);
-  const isCompactQuestion = questionTextLength > 430;
+  const isCompactQuestion = currentQuestion.id === 30 || questionTextLength > 430;
   const headerStatusText = currentIndex === questions.length - 1 ? text.finalQuestion : text.answered(answeredCount);
 
   useEffect(() => {
