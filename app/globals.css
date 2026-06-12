@@ -44,13 +44,16 @@ button {
 .app-shell {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 12px;
   height: 100vh;
   height: 100dvh;
   place-items: center;
   padding: 24px;
   overflow: hidden;
+}
+
+.language-shell {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
 }
 
 .quiz-shell {
@@ -86,10 +89,14 @@ button {
   display: grid;
   gap: clamp(18px, 4vh, 34px);
   align-content: center;
-  height: min(760px, calc(100dvh - 98px));
+  height: min(760px, calc(100dvh - 48px));
   min-height: 0;
   padding: clamp(24px, 5vw, 56px);
   overflow: hidden;
+}
+
+.language-shell .intro-panel {
+  height: min(760px, calc(100dvh - 98px));
 }
 
 .intro-copy {
@@ -192,7 +199,7 @@ button {
 
 .quiz-card {
   display: grid;
-  height: calc(100dvh - 94px);
+  height: calc(100dvh - 44px);
   min-height: 0;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
@@ -444,7 +451,7 @@ button {
   gap: clamp(14px, 3vh, 24px);
   align-content: start;
   width: min(100%, var(--content-width));
-  height: calc(100dvh - 98px);
+  height: calc(100dvh - 48px);
   min-height: 0;
   padding: clamp(24px, 5vw, 48px);
   overflow-y: auto;
@@ -996,8 +1003,11 @@ button {
 @media (max-width: 680px) {
   .app-shell {
     align-items: stretch;
-    gap: 10px;
     padding: 0;
+  }
+
+  .language-shell {
+    gap: 10px;
   }
 
   .language-pill {
@@ -1013,11 +1023,15 @@ button {
   .quiz-card,
   .result-layout {
     width: 100%;
-    height: calc(100dvh - 58px);
+    height: 100dvh;
     min-height: 0;
     border: 0;
     border-radius: 0;
     box-shadow: none;
+  }
+
+  .language-shell .intro-panel {
+    height: calc(100dvh - 58px);
   }
 
   .intro-panel,

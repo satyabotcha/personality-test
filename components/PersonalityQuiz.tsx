@@ -213,7 +213,7 @@ export function PersonalityQuiz() {
   const allAnswered = answeredCount === questions.length;
   const questionTextLength =
     currentQuestion.prompt.length + currentQuestion.answers.reduce((total, answer) => total + answer.text.length, 0);
-  const isCompactQuestion = questionTextLength > 190;
+  const isCompactQuestion = questionTextLength > 430;
   const headerStatusText = currentIndex === questions.length - 1 ? text.finalQuestion : text.answered(answeredCount);
 
   useEffect(() => {
@@ -315,7 +315,7 @@ export function PersonalityQuiz() {
       }
 
       setCurrentIndex((index) => Math.min(index + 1, questions.length - 1));
-    }, 430);
+    }, 330);
   }
 
   function goNext() {
@@ -509,7 +509,6 @@ export function PersonalityQuiz() {
   if (!hasLoadedStorage) {
     return (
       <main className="app-shell" lang={language}>
-        <LanguagePill language={language} onChange={setLanguage} />
         <section className="loading-state" aria-live="polite">
           {text.loading}
         </section>
@@ -519,7 +518,7 @@ export function PersonalityQuiz() {
 
   if (phase === "intro") {
     return (
-      <main className="app-shell" lang={language}>
+      <main className="app-shell language-shell" lang={language}>
         <LanguagePill language={language} onChange={setLanguage} />
         <section className="intro-panel">
           <div className="intro-copy">
@@ -579,7 +578,6 @@ export function PersonalityQuiz() {
 
     return (
       <main className="app-shell result-shell" lang={language}>
-        <LanguagePill language={language} onChange={setLanguage} />
         <section className="result-layout personality-result">
           <div className="result-summary reveal-one">
             <p className="quiz-title-small">{text.result}</p>
@@ -670,7 +668,6 @@ export function PersonalityQuiz() {
 
   return (
     <main className="app-shell quiz-shell" lang={language}>
-      <LanguagePill language={language} onChange={setLanguage} />
       <section className="quiz-card" aria-labelledby="question-title">
         <header className="quiz-header">
           <button className="icon-button" type="button" onClick={goBack} aria-label={text.backQuestion}>
