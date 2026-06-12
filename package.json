@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "typecheck": "tsc --noEmit",
+    "verify:quiz": "node scripts/verify-quiz-data.mjs",
     "build": "next build",
     "start": "next start"
   },
