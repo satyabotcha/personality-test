@@ -183,6 +183,18 @@ function sanitizeFileName(value: string) {
   return value.replace(/[\\/:*?"<>|]/g, "").trim() || "性格色彩测试结果";
 }
 
+function downloadPdf(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export function PersonalityQuiz() {
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -481,21 +493,23 @@ export function PersonalityQuiz() {
       const blob = pdf.output("blob");
       const file = new File([blob], fileName, { type: "application/pdf" });
 
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: text.pdfTitle,
-          files: [file],
-        });
-        setShareStatus(text.pdfReady);
-      } else {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
-        setShareStatus(text.pdfDownloaded);
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: text.pdfTitle,
+            files: [file],
+          });
+          setShareStatus(text.pdfReady);
+          return;
+        } catch (shareError) {
+          if (shareError instanceof DOMException && shareError.name === "AbortError") {
+            return;
+          }
+        }
       }
+
+      downloadPdf(blob, fileName);
+      setShareStatus(text.pdfDownloaded);
     } catch (error) {
       console.error(error);
       setShareStatus(text.pdfFailed);
